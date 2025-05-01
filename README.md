@@ -69,26 +69,6 @@ O projeto segue uma arquitetura baseada em Domain-Driven Design (DDD) com as seg
 - npm (geralmente incluído com Node.js)
 - Git
 
-### Clone o repositório
-
-```bash
-git clone https://github.com/seu-usuario/carro-vendido-api.git
-cd carro-vendido-api
-```
-
-### Instale as dependências (Backend e Frontend)
-
-```bash
-# Instalar dependências do Backend
-cd backend
-npm install
-cd ..
-
-# Instalar dependências do Frontend (se necessário)
-cd frontend
-npm install
-cd ..
-```
 
 ## ⚙️ Configuração (Backend)
 
@@ -239,47 +219,87 @@ O diretório `k8s/` contém arquivos de manifesto base para implantação em Kub
 
 - `k8s/configmap.yaml`: Configurações não sensíveis (ex: `NODE_ENV`).
 - `k8s/secret.yaml`: Dados sensíveis (ex: `DATABASE_URL` de produção). Codifique os valores em Base64.
-- `k8s/deployment-backend.yaml`: Definição do deployment do backend. **Importante:** Defina `resources.requests.cpu` para que o HPA funcione.
-- `k8s/deployment-frontend.yaml`: Definição do deployment do frontend.
-- `k8s/service-backend.yaml` / `k8s/service-frontend.yaml`: Serviços (ex: `ClusterIP`) para expor os pods internamente.
+- `k8s/deployment.yaml`: Definição do deployment do backend. Por padrão configurado com 3 réplicas para alta disponibilidade.
+- `k8s/service.yaml`: Serviço para expor os pods internamente.
 - `k8s/ingress.yaml`: Ingress para expor os serviços externamente (ex: via Nginx Ingress Controller).
 - `k8s/pvc.yaml`: Persistent Volume Claim para dados persistentes (ex: banco de dados, uploads), requer um StorageClass configurado.
 - `k8s/backend-hpa.yaml`: **HorizontalPodAutoscaler** para escalar automaticamente os pods do backend com base no uso de CPU (requer Metrics Server instalado).
 
-### Implantação (Exemplo Geral)
+### Implantação Passo a Passo
 
 ```bash
 # 1. Certifique-se que seu kubectl está configurado para o cluster correto
-# 2. Crie um namespace (opcional)
-# kubectl create namespace minha-app
+kubectl version
 
-# 3. Aplique os segredos (após preencher e codificar)
-# kubectl apply -f k8s/secret.yaml -n minha-app
+# 2. Crie um namespace para o projeto
+kubectl create namespace carro-vendido
 
-# 4. Aplique as configurações
-# kubectl apply -f k8s/configmap.yaml -n minha-app
+# 3. Configure o banco de dados no ConfigMap
+kubectl apply -f k8s/configmap.yaml -n carro-vendido
 
-# 5. Aplique os PVCs
-# kubectl apply -f k8s/pvc.yaml -n minha-app
+# 4. Aplique os segredos
+kubectl apply -f k8s/secret.yaml -n carro-vendido
 
-# 6. Aplique os Deployments
-# kubectl apply -f k8s/deployment-backend.yaml -n minha-app
-# kubectl apply -f k8s/deployment-frontend.yaml -n minha-app
+# 5. Aplique o PVC para persistência de dados
+kubectl apply -f k8s/pvc.yaml -n carro-vendido
 
-# 7. Aplique os Serviços
-# kubectl apply -f k8s/service-backend.yaml -n minha-app
-# kubectl apply -f k8s/service-frontend.yaml -n minha-app
+# 6. Construa a imagem Docker do backend se ainda não estiver disponível
+docker build -t carro-vendido-api:latest ./backend
 
-# 8. Aplique o HPA para o backend
-# kubectl apply -f k8s/backend-hpa.yaml -n minha-app
+# 7. Aplique o Deployment (por padrão com 3 réplicas)
+kubectl apply -f k8s/deployment.yaml -n carro-vendido
 
-# 9. Aplique o Ingress (se aplicável)
-# kubectl apply -f k8s/ingress.yaml -n minha-app
+# 8. Aplique o Serviço para expor os pods
+kubectl apply -f k8s/service.yaml -n carro-vendido
 
-# Verifique o status
-# kubectl get all -n minha-app
-# kubectl get hpa -n minha-app
+# 9. Aplique o HPA para auto-escala
+kubectl apply -f k8s/backend-hpa.yaml -n carro-vendido
+
+# 10. Aplique o Ingress para acesso externo
+kubectl apply -f k8s/ingress.yaml -n carro-vendido
+
+# Verifique o status dos recursos
+kubectl get pods -n carro-vendido
+kubectl get svc -n carro-vendido
+kubectl get ingress -n carro-vendido
+kubectl get hpa -n carro-vendido
 ```
+
+### Ajustando o Número de Réplicas
+
+Você pode aumentar ou diminuir o número de réplicas de duas maneiras:
+
+1. **Editando o arquivo deployment.yaml** (para mudanças permanentes):
+   ```yaml
+   # Em k8s/deployment.yaml
+   spec:
+     replicas: 3  # Altere este valor para o número desejado
+   ```
+   Depois aplique as alterações:
+   ```bash
+   kubectl apply -f k8s/deployment.yaml -n carro-vendido
+   ```
+
+2. **Usando o comando scale** (para mudanças rápidas):
+   ```bash
+   kubectl scale deployment carro-vendido-api --replicas=4 -n carro-vendido
+   ```
+
+### Acessando a Aplicação
+
+Para acessar a aplicação implantada no Kubernetes:
+
+1. **Via Ingress**: adicione uma entrada no arquivo hosts:
+   ```
+   127.0.0.1 api.carrovendido.com.br
+   ```
+   E acesse: `http://api.carrovendido.com.br`
+
+2. **Via Port Forward** (para testes rápidos):
+   ```bash
+   kubectl port-forward -n carro-vendido svc/carro-vendido-api 3000:80
+   ```
+   E acesse: `http://localhost:3000`
 
 ## 📂 Estrutura do Projeto (Backend - `backend/src/`)
 
