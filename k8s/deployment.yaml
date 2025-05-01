@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: carro-vendido-api
+  labels:
+    app: carro-vendido-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: carro-vendido-api
+  template:
+    metadata:
+      labels:
+        app: carro-vendido-api
+    spec:
+      containers:
+      - name: carro-vendido-api
+        image: carro-vendido-api:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: carro-vendido-config
+        - secretRef:
+            name: carro-vendido-secrets
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "256Mi"
+      volumes:
+      - name: data-volume
+        emptyDir: {} 

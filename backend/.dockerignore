@@ -1,0 +1,11 @@
+# Arquivos e pastas a serem ignorados pelo Docker
+node_modules
+npm-debug.log
+.env
+.git
+.gitignore
+tests
+.eslintrc
+dist
+coverage
+*.log

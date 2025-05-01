@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Vehicle {
+  id            Int             @id @default(autoincrement())
+  brand         String          // Marca
+  model         String          // Modelo
+  year          Int             // Ano
+  color         String          // Cor
+  price         Float           // Preço
+  isSold        Boolean         @default(false) // Indica se o veículo foi vendido
+  buyerCPF      String?         // CPF do comprador (opcional, só preenchido quando vendido)
+  saleDate      DateTime?       // Data da venda (opcional, só preenchido quando vendido)
+  // Novos campos para filtros
+  mileage       Int?            // Quilometragem
+  fuelType      String?         // Tipo de combustível (gasolina, etanol, flex, diesel, eletrico, hibrido)
+  transmission  String?         // Tipo de câmbio (manual, automatico, cvt, semi-automatico)
+  condition     String?         // Condição (novo, usado)
+  numberOfDoors Int?            // Número de portas
+  // Relações
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  payment       Payment?        // Relação com o pagamento
+  sellerId      Int?            // Relação com o vendedor
+  seller        Seller?         @relation(fields: [sellerId], references: [id])
+  images        VehicleImage[]  // Relação com imagens
+}
+
+model VehicleImage {
+  id          Int      @id @default(autoincrement())
+  filename    String   // Nome do arquivo no sistema
+  path        String   // Caminho para o arquivo
+  url         String   // URL pública para acessar a imagem
+  description String?  // Descrição opcional da imagem
+  isPrimary   Boolean  @default(false) // Indica se é a imagem principal
+  vehicleId   Int      // ID do veículo relacionado
+  vehicle     Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Seller {
+  id            Int       @id @default(autoincrement())
+  name          String    // Nome completo
+  email         String    @unique // Email
+  phone         String    // Telefone
+  gender        String?   // Gênero
+  birthDate     DateTime? // Data de nascimento
+  cpf           String    @unique // CPF
+  zipCode       String?   // CEP
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  vehicles      Vehicle[] // Relação com veículos
+}
+
+model Payment {
+  id                Int       @id @default(autoincrement())
+  externalId        String?   // ID externo do pagamento no Mercado Pago
+  status            String    // pending, approved, cancelled, refunded
+  amount            Float     // Valor do pagamento
+  paymentMethod     String    // Método de pagamento
+  paymentLink       String?   // Link para pagamento
+  paymentDate       DateTime? // Data de confirmação do pagamento
+  vehicleId         Int       @unique // Relação 1:1 com Vehicle
+  vehicle           Vehicle   @relation(fields: [vehicleId], references: [id])
+  buyerCPF          String?   // CPF do comprador
+  additionalInfo    String?   // Informações adicionais do pagamento em formato JSON
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+} 

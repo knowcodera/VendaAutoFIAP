@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: carro-vendido-config
+data:
+  NODE_ENV: "production"
+  PORT: "3000"
+  LOG_LEVEL: "info"
+  ALLOW_CORS_ORIGIN: "*"
+  DATABASE_PATH: "/app/data"
+  FRONTEND_URL: "http://carro-vendido-frontend-service:80"
+  BACKEND_URL: "http://carro-vendido-api-service:3000"
+  DATABASE_HOST: "localhost"
+  # URL do banco de dados (a string de conexão real estará no Secret)
+  DATABASE_URL_PREFIX: "file:"
+  DATABASE_FILENAME: "/app/data/carro-vendido.db"
+  database-url: "file:../database/dev.db"
+  port: "3000"
+  cors-origin: "*"
+  DATABASE_URL: "file:/app/data/carro-vendido.db"
+  API_URL: "https://api.carrovendido.com.br" 

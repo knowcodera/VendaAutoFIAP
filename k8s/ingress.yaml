@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: carro-vendido-api-ingress
+  labels:
+    app: carro-vendido-api
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - api.carrovendido.com.br
+      secretName: carro-vendido-tls
+  rules:
+    - host: api.carrovendido.com.br
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: carro-vendido-api
+                port:
+                  number: 80 

@@ -1,0 +1,56 @@
+# Arquivos de dependências
+**/node_modules
+**/npm-debug.log
+**/.eslintcache
+
+# Arquivos de build
+**/dist
+**/build
+**/.next
+**/.vite
+**/.turbo
+
+# Arquivos de ambiente
+**/.env
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
+
+# Arquivos de cache
+**/.npm
+**/.cache
+**/.parcel-cache
+
+# Arquivos de sistema
+**/.DS_Store
+**/Thumbs.db
+
+# Arquivos de desenvolvimento
+**/*.log
+**/*.log.*
+**/.git
+**/.gitignore
+**/.github
+**/README.md
+**/LICENSE
+**/.editorconfig
+**/.prettierrc
+**/.prettierignore
+**/*.md
+**/.husky
+**/.vscode
+**/*.test.*
+**/*.spec.*
+**/coverage
+**/tests
+**/__tests__
+**/jest.config.*
+**/cypress
+**/cypress.config.*
+**/playwright
+**/playwright.config.*
+
+# Outros
+**/tmp
+**/temp 

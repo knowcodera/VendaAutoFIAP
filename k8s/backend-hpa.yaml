@@ -1,0 +1,25 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: carro-vendido-api-backend-hpa
+  namespace: default # Ajuste o namespace se necessário
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: carro-vendido-api-backend # Certifique-se que este nome bate com o seu Deployment
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  # - type: Resource # Exemplo para escalar por memória também (descomente se necessário)
+  #   resource:
+  #     name: memory
+  #     target:
+  #       type: Utilization 
+  #       averageUtilization: 80 
